@@ -22,6 +22,7 @@ model products {
   name String
   image_url String?
   category_id Int
+  contents String?
   createdAt DateTime @default(now())
 
   @@index([category_id])
