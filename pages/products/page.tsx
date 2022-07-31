@@ -1,39 +1,107 @@
 import { categories, products } from '@prisma/client'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
-import { Pagination, SegmentedControl } from '@mantine/core'
-import { CATEGORY_MAP, TAKE } from 'constants/products'
+import React, { useEffect, useState } from 'react'
+import { Input, Pagination, SegmentedControl, Select } from '@mantine/core'
+import { CATEGORY_MAP, FILTERS, TAKE } from 'constants/products'
+import { IconSearch } from '@tabler/icons'
+import useDebounce from 'hooks/useDebounce'
+import { useQuery } from '@tanstack/react-query'
 
 export default function Products() {
   const [activePage, setPage] = useState(1)
-  const [total, setTotal] = useState(0)
-  const [categories, setCategories] = useState<categories[]>([])
+  // const [total, setTotal] = useState(0)
+  // const [categories, setCategories] = useState<categories[]>([])
   const [selectedCategory, setCategory] = useState<string>('-1')
-  const [products, setProducts] = useState<products[]>([])
+  // const [products, setProducts] = useState<products[]>([])
+  const [selectedFilter, setFilter] = useState<string | null>(FILTERS[0].value)
+  const [keyword, setKeyword] = useState('')
 
-  useEffect(() => {
-    fetch('/api/get-categories')
-      .then((res) => res.json())
-      .then((data) => setCategories(data.items))
-  }, [])
+  const debouncedKeyword = useDebounce<string>(keyword)
 
-  useEffect(() => {
-    fetch(`/api/get-products-count?category=${selectedCategory}`)
-      .then((res) => res.json())
-      .then((data) => setTotal(Math.ceil(data.items / TAKE)))
-  }, [selectedCategory])
+  // useEffect(() => {
+  //   fetch('/api/get-categories')
+  //     .then((res) => res.json())
+  //     .then((data) => setCategories(data.items))
+  // }, [])
 
-  useEffect(() => {
-    const skip = TAKE * (activePage - 1)
-    fetch(
-      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}`
-    )
-      .then((res) => res.json())
-      .then((data) => setProducts(data.items))
-  }, [activePage, selectedCategory])
+  const { data: categories } = useQuery<
+    { items: categories[] },
+    unknown,
+    categories[]
+  >(
+    ['/api/get-categories'],
+    () => fetch('/api/get-categories').then((res) => res.json()),
+    { select: (data) => data.items }
+  )
+
+  // useEffect(() => {
+  //   fetch(
+  //     `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`
+  //   )
+  //     .then((res) => res.json())
+  //     .then((data) => setTotal(Math.ceil(data.items / TAKE)))
+  // }, [selectedCategory, debouncedKeyword])
+
+  const { data: total } = useQuery<{ items: number }, unknown, number>(
+    [
+      `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`,
+    ],
+    () =>
+      fetch(
+        `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`
+      ).then((res) => res.json()),
+    {
+      select: (data) => Math.ceil(data.items / TAKE),
+    }
+  )
+
+  // useEffect(() => {
+  //   const skip = TAKE * (activePage - 1)
+  //   fetch(
+  //     `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedKeyword}`
+  //   )
+  //     .then((res) => res.json())
+  //     .then((data) => setProducts(data.items))
+  // }, [activePage, selectedCategory, selectedFilter, debouncedKeyword])
+
+  const { data: products } = useQuery<
+    { items: products[] },
+    unknown,
+    products[]
+  >(
+    [
+      `/api/get-products?skip=${
+        TAKE * (activePage - 1)
+      }&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedKeyword}`,
+    ],
+    () =>
+      fetch(
+        `/api/get-products?skip=${
+          TAKE * (activePage - 1)
+        }&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedKeyword}`
+      ).then((res) => res.json()),
+    {
+      select: (data) => data.items,
+    }
+  )
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setKeyword(e.target.value)
+  }
 
   return (
     <div className="px-36 mt-36 mb-36">
+      <div className="mb-4">
+        <Input
+          icon={<IconSearch />}
+          placeholder="Search"
+          value={keyword}
+          onChange={handleChange}
+        />
+      </div>
+      <div className="mb-4">
+        <Select value={selectedFilter} onChange={setFilter} data={FILTERS} />
+      </div>
       {categories && (
         <div className="mb-4">
           <SegmentedControl
@@ -77,12 +145,14 @@ export default function Products() {
         </div>
       )}
       <div className="w-full flex mt-5">
-        <Pagination
-          className="m-auto"
-          page={activePage}
-          onChange={setPage}
-          total={total}
-        />
+        {total && (
+          <Pagination
+            className="m-auto"
+            page={activePage}
+            onChange={setPage}
+            total={total}
+          />
+        )}
       </div>
     </div>
   )
