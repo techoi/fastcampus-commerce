@@ -9,20 +9,11 @@ import { useQuery } from '@tanstack/react-query'
 
 export default function Products() {
   const [activePage, setPage] = useState(1)
-  // const [total, setTotal] = useState(0)
-  // const [categories, setCategories] = useState<categories[]>([])
   const [selectedCategory, setCategory] = useState<string>('-1')
-  // const [products, setProducts] = useState<products[]>([])
   const [selectedFilter, setFilter] = useState<string | null>(FILTERS[0].value)
   const [keyword, setKeyword] = useState('')
 
   const debouncedKeyword = useDebounce<string>(keyword)
-
-  // useEffect(() => {
-  //   fetch('/api/get-categories')
-  //     .then((res) => res.json())
-  //     .then((data) => setCategories(data.items))
-  // }, [])
 
   const { data: categories } = useQuery<
     { items: categories[] },
@@ -34,25 +25,16 @@ export default function Products() {
     { select: (data) => data.items }
   )
 
-  // useEffect(() => {
-  //   fetch(
-  //     `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`
-  //   )
-  //     .then((res) => res.json())
-  //     .then((data) => setTotal(Math.ceil(data.items / TAKE)))
-  // }, [selectedCategory, debouncedKeyword])
-
-  const { data: total } = useQuery<{ items: number }, unknown, number>(
+  const { data: total } = useQuery(
     [
       `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`,
     ],
     () =>
       fetch(
         `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`
-      ).then((res) => res.json()),
-    {
-      select: (data) => Math.ceil(data.items / TAKE),
-    }
+      )
+        .then((res) => res.json())
+        .then((data) => Math.ceil(data.items / TAKE))
   )
 
   // useEffect(() => {
