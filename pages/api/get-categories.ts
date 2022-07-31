@@ -3,18 +3,9 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-async function getProductsCount(category: number) {
-  const where =
-    category && category !== -1
-      ? {
-          where: {
-            category_id: category,
-          },
-        }
-      : undefined
-
+async function getCategories() {
   try {
-    const response = await prisma.products.count(where)
+    const response = await prisma.categories.findMany({})
     console.log(response)
     return response
   } catch (error) {
@@ -31,9 +22,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  const { category } = req.query
   try {
-    const products = await getProductsCount(Number(category))
+    const products = await getCategories()
     res.status(200).json({ items: products, message: 'Success' })
   } catch (error) {
     res.status(400).json({ message: 'Failed' })
