@@ -1,0 +1,34 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+}
+
+datasource db {
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+model categories {
+  id   Int    @id @default(autoincrement())
+  name String
+}
+
+model products {
+  id          Int      @id @default(autoincrement())
+  name        String
+  image_url   String?
+  category_id Int
+  contents    String?
+  price       Int
+  createdAt   DateTime @default(now())
+
+  @@index([category_id])
+}
+
+model user {
+  id    String  @id
+  name  String?
+  email String? @unique
+  image String?
+}
