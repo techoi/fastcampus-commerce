@@ -80,3 +80,9 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+model Wishlist {
+  id Int @id @default(autoincrement())
+  userId String @unique
+  productIds String
+}
