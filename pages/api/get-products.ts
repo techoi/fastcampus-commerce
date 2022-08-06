@@ -32,7 +32,9 @@ async function getProducts({
       : containsCondition
       ? containsCondition
       : undefined
+
   const orderByCondition = getOrderBy(orderBy)
+
   try {
     const response = await prisma.products.findMany({
       skip: skip,
@@ -68,7 +70,7 @@ export default async function handler(
       take: Number(take),
       category: Number(category),
       orderBy: String(orderBy),
-      contains: String(contains),
+      contains: contains ? String(contains) : '',
     })
 
     res.status(200).json({ items: products, message: 'Success' })
