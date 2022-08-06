@@ -1,18 +1,19 @@
 import CustomEditor from '@components/Editor'
-import { products } from '@prisma/client'
+import { Cart, products } from '@prisma/client'
 import { format } from 'date-fns'
 import { convertFromRaw, convertToRaw, EditorState } from 'draft-js'
 import { GetServerSidePropsContext } from 'next'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import Carousel from 'nuka-carousel'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { CATEGORY_MAP } from 'constants/products'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@mantine/core'
 import { IconHeart, IconHeartbeat, IconShoppingCart } from '@tabler/icons'
 import { useSession } from 'next-auth/react'
 import { CountControl } from '@components/CountControl'
+import { CART_QUERY_KEY } from 'pages/cart'
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const product = await fetch(
@@ -90,6 +91,31 @@ export default function Products(props: {
     }
   )
 
+  const { mutate: addCart } = useMutation<
+    unknown,
+    unknown,
+    Omit<Cart, 'id' | 'userId'>,
+    any
+  >(
+    (item) =>
+      fetch('/api/add-cart', {
+        method: 'POST',
+        body: JSON.stringify({ item }),
+      })
+        .then((data) => data.json())
+        .then((res) => res.items),
+    {
+      onMutate: () => {
+        queryClient.invalidateQueries([CART_QUERY_KEY])
+      },
+      onSuccess: () => {
+        router.push('/cart')
+      },
+    }
+  )
+
+  const product = props.product
+
   const validate = (type: 'cart' | 'order') => {
     if (quantity == null) {
       alert('최소 수량을 선택하세요.')
@@ -97,11 +123,14 @@ export default function Products(props: {
     }
 
     // TODO: 장바구니에 등록하는 기능 추가
-
-    router.push('/cart')
+    if (type === 'cart') {
+      addCart({
+        productId: product.id,
+        quantity: quantity,
+        amount: product.price * quantity,
+      })
+    }
   }
-
-  const product = props.product
 
   const isWished =
     wishlist != null && productId != null
