@@ -94,3 +94,22 @@ model Cart {
   quantity Int
   amount Int
 }
+
+model OrderItem {
+  id Int @id @default(autoincrement())
+  productId Int
+  quantity Int
+  price Int
+  amount Int
+}
+
+model Orders {
+  id Int @id @default(autoincrement())
+  userId String
+  orderItemIds String
+  receiver String?
+  address String?
+  phoneNumber String?
+  createdAt DateTime @default(now())
+  status Int
+}
