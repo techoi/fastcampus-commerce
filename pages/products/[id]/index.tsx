@@ -1,7 +1,7 @@
 import CustomEditor from '@components/Editor'
 import { Cart, Comment, OrderItem, products } from '@prisma/client'
 import { format } from 'date-fns'
-import { convertFromRaw, convertToRaw, EditorState } from 'draft-js'
+import { convertFromRaw, EditorState } from 'draft-js'
 import { GetServerSidePropsContext } from 'next'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
