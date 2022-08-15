@@ -10,11 +10,13 @@ async function updateComment({
   orderItemId,
   rate,
   contents,
+  images,
 }: {
   userId: string
   orderItemId: number
   rate: number
   contents: string
+  images: string
 }) {
   try {
     const response = await prisma.comment.upsert({
@@ -24,12 +26,14 @@ async function updateComment({
       update: {
         contents,
         rate,
+        images,
       },
       create: {
         userId,
         orderItemId,
         contents,
         rate,
+        images,
       },
     })
 
@@ -51,7 +55,7 @@ export default async function handler(
   res: NextApiResponse<Data>
 ) {
   const session = await unstable_getServerSession(req, res, authOptions)
-  const { orderItemId, rate, contents } = JSON.parse(req.body)
+  const { orderItemId, rate, contents, images } = JSON.parse(req.body)
   if (session == null) {
     res.status(200).json({ items: [], message: 'no Session' })
     return
@@ -62,6 +66,7 @@ export default async function handler(
       orderItemId: orderItemId,
       rate: rate,
       contents: contents,
+      images: images,
     })
     res.status(200).json({ items: wishlist, message: 'Success' })
   } catch (error) {

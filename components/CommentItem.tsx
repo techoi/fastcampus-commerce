@@ -3,6 +3,7 @@ import { IconStar } from '@tabler/icons'
 import { format } from 'date-fns'
 import { convertFromRaw, EditorState } from 'draft-js'
 import { CommentItemType } from 'pages/products/[id]'
+import AutoSizeImage from './AutoSizeImage'
 import CustomEditor from './Editor'
 
 export default function CommentItem({ item }: { item: CommentItemType }) {
@@ -36,6 +37,11 @@ export default function CommentItem({ item }: { item: CommentItemType }) {
           readOnly
           noPadding
         />
+      </div>
+      <div style={{ display: 'flex' }}>
+        {item.images?.split(',').map((image, idx) => (
+          <AutoSizeImage key={idx} src={image} size={150} />
+        ))}
       </div>
     </Wrapper>
   )
