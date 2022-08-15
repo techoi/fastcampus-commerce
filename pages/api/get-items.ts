@@ -31,7 +31,7 @@ type Data = {
 }
 
 export default async function handler(
-  req: NextApiRequest,
+  _: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
   try {

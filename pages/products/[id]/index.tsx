@@ -10,17 +10,13 @@ import { useState } from 'react'
 import { CATEGORY_MAP } from 'constants/products'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@mantine/core'
-import {
-  IconHeart,
-  IconHeartbeat,
-  IconShoppingCart,
-  IconUfOff,
-} from '@tabler/icons'
+import { IconHeart, IconHeartbeat, IconShoppingCart } from '@tabler/icons'
 import { useSession } from 'next-auth/react'
 import { CountControl } from '@components/CountControl'
 import { CART_QUERY_KEY } from 'pages/cart'
 import { ORDER_QUERY_KEY } from 'pages/my'
 import CommentItem from '@components/CommentItem'
+import Head from 'next/head'
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const product = await fetch(
@@ -100,7 +96,7 @@ export default function Products(props: {
         // Return a context object with the snapshotted value
         return { previous }
       },
-      onError: (error, _, context) => {
+      onError: (__, _, context) => {
         queryClient.setQueryData([WISHLIST_QUERY_KEY], context.previous)
       },
       onSuccess: () => {
@@ -191,6 +187,10 @@ export default function Products(props: {
     <>
       {product != null && productId != null ? (
         <div className="flex flex-row">
+          <Head>
+            <title>{product.name}</title>
+            <meta name="description" content="Fastcampus commerce service" />
+          </Head>
           <div style={{ maxWidth: 600, marginRight: 52 }}>
             <Carousel
               animation="fade"

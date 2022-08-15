@@ -1,14 +1,12 @@
 import { CountControl } from '@components/CountControl'
-import styled from '@emotion/styled'
 import { Badge, Button } from '@mantine/core'
-import { Cart, OrderItem, Orders, products } from '@prisma/client'
-import { IconRefresh, IconX } from '@tabler/icons'
+import { Cart, OrderItem, Orders } from '@prisma/client'
+import { IconX } from '@tabler/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CATEGORY_MAP } from 'constants/products'
 import { format } from 'date-fns'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface OrderItemDetail extends OrderItem {
   name: string
@@ -36,8 +34,6 @@ const ORDER_STATUS_MAP = [
 export const ORDER_QUERY_KEY = '/api/get-order'
 
 export default function MyPage() {
-  const router = useRouter()
-
   const { data } = useQuery<{ items: OrderDetail[] }, unknown, OrderDetail[]>(
     [ORDER_QUERY_KEY],
     () =>
@@ -105,7 +101,7 @@ const DetailItem = (props: OrderDetail) => {
         // Return a context object with the snapshotted value
         return { previous }
       },
-      onError: (error, _, context) => {
+      onError: (__, _, context) => {
         queryClient.setQueryData([ORDER_QUERY_KEY], context.previous)
       },
       onSuccess: () => {
@@ -221,10 +217,3 @@ const Item = (props: OrderItemDetail & { status: number }) => {
     </div>
   )
 }
-
-const Row = styled.div`
-  display: flex;
-  * ~ * {
-    margin-left: auto;
-  }
-`
